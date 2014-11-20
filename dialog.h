@@ -2,9 +2,12 @@
 #define DIALOG_H
 
 #include <QDialog>
+#include <QDebug>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QTime>
+#include <qmath.h>
 
 namespace Ui {
 class Dialog;
@@ -23,6 +26,8 @@ public:
 
     void recursive(QPointF start, QPointF end, int seg);
     inline QPointF average(QPointF p1, QPointF p2);
+    inline int random(int a);
+    float lengthLine(QPointF p1, QPointF p2);
 
 private:
     Ui::Dialog *ui;
