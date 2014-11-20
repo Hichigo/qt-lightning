@@ -8,8 +8,8 @@ Dialog::Dialog(QWidget *parent) :
     ui->setupUi(this);
     qsrand(QTime::currentTime().msec());
     p1 = QPointF(width()/2, height()/2);
-
-    recursive(QPointF(width()/2, height()-20), QPointF(width()/2, 20), 6);
+    segCount = 6;
+    recursive(QPointF(width()/2, height()-20), QPointF(width()/2, 20), segCount);
 }
 
 Dialog::~Dialog()
@@ -23,7 +23,18 @@ void Dialog::recursive(QPointF start, QPointF end, int seg)
         return;
     }
     QPointF mid = average(start, end);
-    mid.setX(mid.x() + random(lengthLine(start, end)/2));
+
+    QPointF vecPerp = createVec(start, end);
+
+    vecPerp = normalizeVec(vecPerp);
+
+    vecPerp = perpendicular(vecPerp);
+
+    vecPerp *= (seg * random(10));
+
+    mid.setX(mid.x()+vecPerp.x());
+    mid.setY(mid.y()+vecPerp.y());
+
     if(seg == 1) {
         QLineF t = QLineF(start, mid);
         line.push_back(t);
@@ -57,6 +68,27 @@ float Dialog::lengthLine(QPointF p1, QPointF p2)
     return qSqrt(x + y);
 }
 
+QPointF Dialog::createVec(QPointF p1, QPointF p2)
+{
+    return QPointF(p2 - p1);
+}
+
+float Dialog::lengthVec(QPointF p)
+{
+    return qSqrt(p.x()*p.x() + p.y()*p.y());
+}
+
+QPointF Dialog::normalizeVec(QPointF p)
+{
+    float len = lengthVec(p);
+    return QPointF(p.x()/len, p.y()/len);
+}
+
+QPointF Dialog::perpendicular(QPointF p)
+{
+    return QPointF(p.y()* - 1, p.x());
+}
+
 void Dialog::paintEvent(QPaintEvent *pe)
 {
     QPainter p(this);
@@ -64,7 +96,6 @@ void Dialog::paintEvent(QPaintEvent *pe)
 
     for(int i = 0; i < line.length(); i++) {
         p.drawLine(line.at(i));
-        p.drawLine(line.at(i).normalVector());
     }
 }
 
@@ -73,7 +104,7 @@ void Dialog::mousePressEvent(QMouseEvent *me)
     if(me->button()) {
         line.clear();
         p1 = QPointF(me->pos().x(), me->pos().y());
-        recursive(QPointF(width()/2, height()-20), p1, 6);
+        recursive(QPointF(width()/2, height()-20), p1, segCount);
     }
     repaint();
 }
